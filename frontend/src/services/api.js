@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = import.meta.env.VITE_API_URL || 'http://127.0.0.1:5000';
 
 async function request(endpoint, options = {}) {
   const url = `${BASE_URL}${endpoint}`;
@@ -7,17 +7,32 @@ async function request(endpoint, options = {}) {
     ...options.headers
   };
 
-  const response = await fetch(url, {
-    ...options,
-    headers
-  });
+  let response;
+  try {
+    response = await fetch(url, {
+      ...options,
+      headers
+    });
+  } catch {
+    const error = new Error('Tidak dapat terhubung ke server backend. Pastikan server backend berjalan di http://127.0.0.1:5000.');
+    error.status = 0;
+    error.messages = [error.message];
+    throw error;
+  }
 
-  const data = await response.json().catch(() => ({}));
+  let data = {};
+  try {
+    data = await response.json();
+  } catch {
+    data = {};
+  }
 
   if (!response.ok) {
-    const error = new Error(data.error || 'Request failed');
+    const fallbackMessage = `Permintaan gagal (${response.status} ${response.statusText || 'Error'})`;
+    const message = data.error || data.message || fallbackMessage;
+    const error = new Error(message);
     error.status = response.status;
-    error.messages = data.messages || [data.error || 'Unknown error'];
+    error.messages = data.messages || [message];
     throw error;
   }
 
