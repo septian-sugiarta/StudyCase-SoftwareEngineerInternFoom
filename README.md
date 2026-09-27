@@ -1,59 +1,151 @@
 # Tiered Quantity Discount System
 
-Sistem manajemen promo dan kalkulator diskon bertingkat (*tiered quantity discount*) berbasis kuantitas pembelian per produk. Proyek ini dibangun dengan arsitektur terpisah antara backend (Node.js & Express.js) dan frontend (React.js), dilengkapi validasi input komprehensif, unit testing, dan integration testing.
+Sistem pengelolaan aturan diskon bertingkat (*tiered quantity discount*) dan kalkulator kalkulasi diskon otomatis berbasis kuantitas pembelian per produk. Proyek ini dibangun dengan memisahkan arsitektur frontend (React.js + Vite) dan backend (Node.js + Express.js), dilengkapi validasi input komprehensif, unit testing, integration testing, serta dokumentasi teknis lengkap.
+
+---
+
+## Daftar Isi
+1. [Fitur Utama](#fitur-utama)
+2. [Teknologi yang Digunakan](#teknologi-yang-digunakan)
+3. [Struktur Folder](#struktur-folder)
+4. [Cara Menjalankan Proyek](#1-cara-menjalankan-proyek)
+5. [Dokumentasi API](#2-dokumentasi-api)
+6. [Keputusan Desain & Arsitektur](#3-keputusan-desain--arsitektur)
+7. [Batasan & Asumsi Sistem](#4-batasan--asumsi-sistem)
+8. [Penjelasan Bug pada Tugas C (Debugging)](#5-penjelasan-bug-pada-tugas-c-debugging)
+
+---
+
+## Fitur Utama
+
+- **Manajemen Promo (CRUD)**: Membuat, menampilkan, mengubah, dan menghapus aturan diskon per produk.
+- **Daftar Tier Dinamis**: Menambah dan menghapus baris aturan tier kuantitas secara interaktif.
+- **Kalkulator Diskon Real-time**: Menghitung tier diskon, potongan harga, dan harga akhir secara otomatis ketika kuantitas atau harga satuan diinput.
+- **Validasi Ketat**: Memastikan aturan tier terurut naik tanpa duplikasi batas minimum (`minQty`), persentase diskon valid (0–100%), dan angka kuantitas/harga bernilai positif.
+- **Testing Lengkap**: Unit test untuk logika penentuan tier diskon dan integration test untuk seluruh endpoint REST API.
+
+---
+
+## Teknologi yang Digunakan
+
+| Komponen | Teknologi | Keterangan |
+| :--- | :--- | :--- |
+| **Backend Runtime** | Node.js (v18+) | Lingkungan eksekusi JavaScript |
+| **Web Framework** | Express.js | Framework REST API |
+| **Frontend UI** | React.js (v18) + Vite | Antarmuka pengguna berbasis komponen fungsional |
+| **Testing** | Jest + Supertest | Unit testing dan HTTP integration testing |
+| **Icons & Styling** | Lucide React + Clean CSS | Komponen ikon dan tata letak responsif |
+
+---
+
+## Struktur Folder
+
+```text
+Software Intern Foom Study Case/
+├── backend/
+│   ├── src/
+│   │   ├── controllers/
+│   │   │   └── promoController.js      # Penanganan request & response HTTP
+│   │   ├── middlewares/
+│   │   │   ├── errorHandler.js         # Handler error terpusat
+│   │   │   └── validateRequest.js      # Validasi payload request
+│   │   ├── repositories/
+│   │   │   └── promoRepository.js      # Abstraksi persistensi data (file JSON / memory)
+│   │   ├── routes/
+│   │   │   └── promoRoutes.js          # Definisi rute endpoint
+│   │   ├── services/
+│   │   │   └── promoService.js         # Logika bisnis promo
+│   │   ├── utils/
+│   │   │   └── discountCalculator.js   # Pure logic kalkulasi diskon & tier
+│   │   ├── app.js                      # Konfigurasi aplikasi Express
+│   │   └── server.js                   # Entry point server backend
+│   ├── tests/
+│   │   ├── integration/
+│   │   │   └── promoRoutes.test.js     # Integration test API
+│   │   └── unit/
+│   │       └── discountCalculator.test.js # Unit test getDiscountTier
+│   └── package.json
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── DiscountCalculator.jsx  # Widget kalkulator diskon real-time
+│   │   │   ├── PromoForm.jsx           # Form modal tambah/ubah promo & tier dinamis
+│   │   │   └── PromoList.jsx           # Tabel daftar promo & aksi
+│   │   ├── services/
+│   │   │   └── api.js                  # Client fetch API ke backend
+│   │   ├── App.jsx                     # Komponen utama state & orkestrator
+│   │   ├── index.css                   # Styling desain antarmuka
+│   │   └── main.jsx                    # Entry point React
+│   ├── index.html
+│   ├── package.json
+│   └── vite.config.js
+├── .gitignore
+├── package.json                        # Orchestration scripts di root
+└── README.md
+```
 
 ---
 
 ## 1. Cara Menjalankan Proyek
 
 ### Prasyarat
-- **Node.js** (v18.0.0 atau lebih baru disarankan, teruji pada Node.js v21)
-- **npm** (v9.0.0 atau lebih baru)
+- **Node.js**: versi 18 atau lebih baru (teruji pada Node.js v21)
+- **npm**: versi 9 atau lebih baru
 - **Git**
 
 ### Instalasi Dependensi
-Jalankan perintah berikut di root folder proyek untuk menginstal seluruh dependensi backend dan frontend:
+Jalankan perintah berikut di root folder proyek:
 
 ```bash
-# Opsi 1: Menggunakan script root
+# Menginstal seluruh dependensi backend dan frontend sekaligus
 npm run install:all
+```
 
-# Opsi 2: Instalasi manual per folder
+*Atau instalasi manual per direktori:*
+```bash
 cd backend && npm install
 cd ../frontend && npm install
 ```
 
+---
+
 ### Konfigurasi Environment Variable
-Konfigurasi bersifat opsional karena sudah disiapkan nilai default yang siap pakai:
+Konfigurasi bersifat opsional karena telah disediakan nilai default siap pakai:
 - **Backend**:
   - `PORT`: Port server backend (default: `5000`).
 - **Frontend**:
-  - `VITE_API_URL`: URL API backend jika tidak menggunakan reverse proxy bawaan Vite (default: reverse proxy mengarah ke `http://localhost:5000`).
+  - `VITE_API_URL`: URL API backend jika tidak menggunakan reverse proxy bawaan Vite (default: otomatis menggunakan proxy ke `http://localhost:5000`).
 
-### Menjalankan Aplikasi
+---
 
-#### 1. Menjalankan Backend
+### Menjalankan Server & Aplikasi
+
+#### 1. Jalankan Backend Server
 Buka terminal dan jalankan:
 ```bash
 npm run start:backend
-# atau: cd backend && npm run dev
 ```
-Server backend berjalan di `http://localhost:5000`.
+Server backend akan aktif di `http://localhost:5000`.
 
-#### 2. Menjalankan Frontend
-Buka terminal baru dan jalankan:
+#### 2. Jalankan Frontend Client
+Buka jendela terminal baru dan jalankan:
 ```bash
 npm run start:frontend
-# atau: cd frontend && npm run dev
 ```
 Aplikasi frontend dapat diakses melalui browser di `http://localhost:3000`.
 
+---
+
 ### Menjalankan Pengujian (Testing)
+
 Untuk menjalankan seluruh unit test dan integration test pada backend:
 ```bash
 npm run test:backend
-# atau: cd backend && npm test
 ```
+
+Hasil eksekusi mencakup 19 test case yang menguji seluruh endpoint dan logika kalkulasi batas:
+- `PASS tests/unit/discountCalculator.test.js`
+- `PASS tests/integration/promoRoutes.test.js`
 
 ---
 
@@ -65,12 +157,12 @@ Base URL: `http://localhost:5000`
 
 | Method | Endpoint | Deskripsi |
 | :--- | :--- | :--- |
-| `GET` | `/promos` | Menampilkan seluruh daftar promo |
+| `GET` | `/promos` | Mengambil seluruh daftar promo |
 | `GET` | `/promos/:id` | Mengambil detail satu promo berdasarkan ID |
-| `POST` | `/promos` | Membuat aturan promo baru beserta daftar tier |
-| `PUT` | `/promos/:id` | Mengubah data promo dan aturan tier yang sudah ada |
+| `POST` | `/promos` | Membuat promo baru beserta aturan tier |
+| `PUT` | `/promos/:id` | Mengubah promo dan aturan tier yang ada |
 | `DELETE` | `/promos/:id` | Menghapus promo berdasarkan ID |
-| `POST` | `/promos/:id/calculate` | Menghitung tier diskon, potongan, dan harga akhir |
+| `POST` | `/promos/:id/calculate` | Menghitung diskon dan harga akhir secara otomatis |
 
 ---
 
@@ -132,7 +224,13 @@ Mengambil detail satu promo berdasarkan ID.
 ---
 
 #### 3. `POST /promos`
-Membuat promo baru. Validasi: `productName` wajib diisi, `tiers` harus terurut naik berdasarkan `minQty` tanpa duplikasi, dan `discountPercent` di antara 0-100.
+Membuat promo baru. 
+
+**Validasi yang diterapkan:**
+- `productName`: Wajib diisi dan berupa string tidak kosong.
+- `tiers`: Array berisi minimal satu aturan `{ minQty, discountPercent }`.
+- `minQty`: Bilangan bulat non-negatif (`minQty >= 0`), terurut naik secara ketat tanpa duplikasi.
+- `discountPercent`: Angka di rentang 0 sampai 100.
 
 **Request Body:**
 ```json
@@ -165,7 +263,7 @@ Membuat promo baru. Validasi: `productName` wajib diisi, `tiers` harus terurut n
 }
 ```
 
-**Response `400 Bad Request` (Jika data tidak valid):**
+**Response `400 Bad Request`:**
 ```json
 {
   "error": "Validation Error",
@@ -178,7 +276,7 @@ Membuat promo baru. Validasi: `productName` wajib diisi, `tiers` harus terurut n
 ---
 
 #### 4. `PUT /promos/:id`
-Memperbarui data promo dan susunan tier yang ada.
+Memperbarui data promo dan susunan tier.
 
 **Request Body:**
 ```json
@@ -212,7 +310,7 @@ Memperbarui data promo dan susunan tier yang ada.
 ---
 
 #### 5. `DELETE /promos/:id`
-Menghapus promo dari sistem.
+Menghapus promo berdasarkan ID.
 
 **Response `200 OK`:**
 ```json
@@ -224,7 +322,11 @@ Menghapus promo dari sistem.
 ---
 
 #### 6. `POST /promos/:id/calculate`
-Melakukan kalkulasi diskon otomatis berdasarkan jumlah barang (`quantity`) dan harga satuan (`unitPrice`).
+Melakukan kalkulasi diskon otomatis berdasarkan jumlah unit (`quantity`) dan harga satuan (`unitPrice`).
+
+**Validasi yang diterapkan:**
+- `quantity`: Angka positif lebih besar dari 0 (`quantity > 0`).
+- `unitPrice`: Angka positif lebih besar dari 0 (`unitPrice > 0`).
 
 **Request Body:**
 ```json
@@ -270,30 +372,30 @@ Melakukan kalkulasi diskon otomatis berdasarkan jumlah barang (`quantity`) dan h
 ## 3. Keputusan Desain & Arsitektur
 
 ### Pemisahan Tanggung Jawab (Separation of Concerns)
-Backend dibangun menggunakan pola arsitektur berlapis:
-- **Routes Layer (`routes/`)**: Mendefinisikan jalur routing HTTP dan mengikat middleware validasi ke setiap handler.
-- **Middleware Layer (`middlewares/`)**: Memvalidasi payload request sebelum masuk ke logic utama serta menangani *error handling* terpusat.
-- **Controller Layer (`controllers/`)**: Mengelola protokol HTTP (status code, deserialisasi request, dan format response).
-- **Service Layer (`services/`)**: Mengatur proses bisnis dan kalkulasi.
-- **Domain Utility (`utils/discountCalculator.js`)**: Berisi pure function kalkulasi diskon yang independen dari framework HTTP, sehingga mudah diuji secara modular.
-- **Repository Pattern (`repositories/promoRepository.js`)**: Memisahkan logika penyimpanan data dari logika bisnis, mendukung mode persistensi JSON file untuk runtime reguler dan in-memory untuk kecepatan unit & integration test.
+Aplikasi memisahkan layer secara tegas untuk menjaga keterbacaan, kemudahan pengujian, dan skalabilitas kode:
+- **Routes Layer (`routes/`)**: Mengatur routing HTTP dan menghubungkan middleware validasi ke controller terkait.
+- **Middleware Layer (`middlewares/`)**: Memvalidasi request sebelum menyentuh logika bisnis serta menyediakan penanganan error terpusat (`errorHandler`).
+- **Controller Layer (`controllers/`)**: Bertanggung jawab atas pengelolaan protokol HTTP (status code, ekstraksi parameter, dan format serialisasi).
+- **Service Layer (`services/`)**: Mengisolasi aturan bisnis promo dan mengorkestrasi kalkulasi diskon.
+- **Domain Utility (`utils/discountCalculator.js`)**: Modul fungsi murni (*pure functions*) untuk menghitung tier dan harga akhir tanpa keterikatan pada HTTP framework.
+- **Repository Pattern (`repositories/promoRepository.js`)**: Mengabstraksi akses data. Mendukung mode file JSON terstruktur untuk operasi normal dan mode `:memory:` untuk pengujian otomatis yang terisolasi dan cepat.
 
 ### Struktur Data Tier
-Aturan diskon disimpan dalam bentuk *array of objects* `[{ minQty: number, discountPercent: number }]` yang divalidasi terurut naik secara ketat (`strictly ascending`). Desain ini memastikan:
-1. Validasi batas bawah bersifat terprediksi tanpa celah tumpang tindih (*overlapping* atau *gap* yang ambigu).
-2. Algoritma evaluasi tier dapat dieksekusi dalam kompleksitas $O(N)$ secara efisien menggunakan pendekatan reverse sweep dari tier tertinggi ke terendah.
+Aturan diskon disimpan sebagai array objek `[{ minQty: number, discountPercent: number }]` yang divalidasi terurut naik secara ketat (*strictly ascending*). 
+1. **Validasi Tanpa Ambang Tumpang Tindih**: Menghilangkan kemungkinan ambiguitas data antar-tingkatan kuantitas.
+2. **Efisiensi Evaluasi $O(N)$**: Evaluasi kuantitas dilakukan dengan metode *reverse search* dari tier batas tertinggi ke terendah, menghasilkan evaluasi instan tanpa overhead berlebih.
 
 ---
 
 ## 4. Batasan & Asumsi Sistem
 
-1. **Autentikasi & Otorisasi**: Sistem belum mengimplementasikan autentikasi (JWT/Session) atau hak akses role (Admin/Kasir), sesuai dengan ketentuan batasan pada studi kasus.
-2. **Kalkulasi Single-Product**: Endpoint kalkulasi dievaluasi untuk satu produk promo dalam satu transaksi. Sistem belum mencakup keranjang belanja multi-produk atau kombinasi kupon diskon global.
-3. **Persistensi & Konkurensi**: Penyimpanan data menggunakan file JSON terstruktur dengan repository pattern. Sistem ini ditujukan untuk lingkungan lokal/studi kasus dan belum mengimplementasikan *row-level locking* database untuk menangani *high concurrent write*.
+1. **Autentikasi & Otorisasi**: Sistem belum dilengkapi autentikasi pengguna (JWT/Session) maupun hak akses role, sesuai dengan batasan penugasan studi kasus.
+2. **Kalkulasi Single-Product**: Perhitungan diskon dievaluasi untuk satu produk per transaksi dan belum mencakup keranjang belanja multi-produk atau voucher global.
+3. **Persistensi File JSON**: Penyimpanan menggunakan file JSON lokal dengan repository pattern. Ditujukan untuk lingkungan pengembangan dan evaluasi lokal, bukan untuk konkurensi tulis tinggi (*high concurrent writes*).
 
 ---
 
-## 5. Penjelasan Bug pada Tugas C (Akar Masalah & Perbaikan)
+## 5. Penjelasan Bug pada Tugas C (Debugging)
 
 ### Kode Asli dengan Bug:
 ```javascript
@@ -309,14 +411,15 @@ function getDiscountTier(quantity, tiers) {
 }
 ```
 
-### Akar Masalah:
-1. **Penghentian Dini pada Loop Naik (`break;`)**:
-   Daftar `tiers` terurut naik berdasarkan `minQty` (misal: 0, 50, 200, 500). Ketika dipanggil `getDiscountTier(250, tiers)`, pada iterasi pertama `i = 0` (`minQty = 0`), kondisi `250 > 0` langsung bernilai `true`. Program langsung mengisi `discount = 0` dan mengeksekusi `break;`, sehingga perulangan langsung berhenti tanpa pernah memeriksa tier yang lebih tinggi (tier 50, 200, atau 500).
+### Akar Penyebab Masalah:
+1. **Penghentian Prematur pada Loop Naik (`break;`)**:
+   Daftar `tiers` terurut naik berdasarkan `minQty` (contoh: 0, 50, 200, 500). Ketika dipanggil `getDiscountTier(250, tiers)`, pada iterasi pertama `i = 0` (`minQty = 0`), kondisi `250 > 0` langsung terpenuhi. Program mengisi `discount = 0` lalu langsung mengeksekusi `break;`, sehingga loop terhenti sebelum sempat memeriksa tier yang lebih tinggi (tier 50, 200, atau 500).
 2. **Operator Perbandingan Strict (`>`)**:
-   Kondisi menggunakan `quantity > tiers[i].minQty` alih-alih `>=`. Akibatnya, kuantitas yang berada tepat pada batas bawah tier (misal: `qty = 50` pada tier `50-199`) menghasilkan nilai `false` (`50 > 50`), sehingga gagal mendapatkan diskon pada tier yang seharusnya berhak ia peroleh.
+   Penggunaan operator `>` menyebabkan kuantitas yang tepat berada di batas bawah tier (misal: `qty = 50` pada tier `50-199`) menghasilkan nilai `false` (`50 > 50`), sehingga pelanggan tidak mendapatkan diskon yang seharusnya menjadi haknya.
 
 ### Solusi & Logika Perbaikan:
-Fungsi diperbaiki dengan melakukan iterasi mundur (*reverse loop*) dari indeks tier tertinggi ke indeks terendah, serta menggunakan operator inklusif `>=`:
+Fungsi diperbaiki dengan melakukan iterasi dari tier tertinggi ke terendah (*reverse loop*) dan menggunakan operator inklusif `>=`:
+
 ```javascript
 function getDiscountTier(quantity, tiers) {
   if (!Array.isArray(tiers) || tiers.length === 0 || quantity < 0) {
@@ -332,7 +435,8 @@ function getDiscountTier(quantity, tiers) {
   return 0;
 }
 ```
-Dengan perbaikan ini:
-- Untuk `quantity = 250`, loop memeriksa dari tier 500 (`250 >= 500` -> `false`), lalu memeriksa tier 200 (`250 >= 200` -> `true`), dan langsung mengembalikan diskon tertinggi yang memenuhi syarat, yaitu `10%`.
-- Untuk batas bawah `quantity = 50`, kondisi `50 >= 50` terpenuhi dengan benar menghasilkan diskon `5%`.
-- Untuk kuantitas di bawah ambang batas (misal `qty = 10`), sistem mengembalikan nilai `0%`.
+
+**Hasil setelah perbaikan:**
+- Untuk `quantity = 250`, sistem memeriksa tier 500 (`250 >= 500` -> `false`), kemudian memeriksa tier 200 (`250 >= 200` -> `true`), dan langsung mengembalikan diskon tertinggi yang memenuhi syarat, yaitu **10%**.
+- Untuk nilai batas bawah `quantity = 50`, kondisi `50 >= 50` terpenuhi dengan benar menghasilkan diskon **5%**.
+- Untuk kuantitas di bawah ambang batas diskon (misal `qty = 10`), fungsi mengembalikan **0%**.
