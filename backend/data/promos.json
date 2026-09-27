@@ -22,5 +22,53 @@
     ],
     "createdAt": "2026-09-27T08:26:06.196Z",
     "updatedAt": "2026-09-27T08:26:06.198Z"
+  },
+  {
+    "id": "b8701cae-4aeb-49e6-8504-476a8a885e13",
+    "productName": "Baked Bread",
+    "tiers": [
+      {
+        "minQty": 3,
+        "discountPercent": 3
+      },
+      {
+        "minQty": 50,
+        "discountPercent": 12
+      },
+      {
+        "minQty": 200,
+        "discountPercent": 34
+      },
+      {
+        "minQty": 500,
+        "discountPercent": 40
+      }
+    ],
+    "createdAt": "2026-09-27T09:06:36.742Z",
+    "updatedAt": "2026-09-27T09:09:21.919Z"
+  },
+  {
+    "id": "857bc4a0-3d20-4563-936c-e136d2551c77",
+    "productName": "Beef Steak",
+    "tiers": [
+      {
+        "minQty": 0,
+        "discountPercent": 0
+      },
+      {
+        "minQty": 50,
+        "discountPercent": 5
+      },
+      {
+        "minQty": 200,
+        "discountPercent": 10
+      },
+      {
+        "minQty": 500,
+        "discountPercent": 15
+      }
+    ],
+    "createdAt": "2026-09-27T09:07:29.854Z",
+    "updatedAt": "2026-09-27T09:09:56.499Z"
   }
 ]
